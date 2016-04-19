@@ -14,13 +14,13 @@ import co.paralleluniverse.strands.channels.Selector;
 import co.paralleluniverse.strands.concurrent.ReentrantLock;
 
 public final class Main {
-    private static final int RUNS = 2;
+    private static final int RUNS = 10;
 
-    private static final int PRODUCERS = 5;
+    private static final int PRODUCERS = 1000;
 
     private static final int MESSAGES_PER_PRODUCER = 10;
 
-    private static final long PROD_SLEEP_MS = 10;
+    private static final long PROD_SLEEP_MS = 0;
     private static final long CONS_SLEEP_MS = 0;
 
     private static final long CONS_SELECT_TIMEOUT_MS = 1000;
