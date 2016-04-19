@@ -93,16 +93,18 @@ public final class Main {
                             l("building select with open channels");
 
                             final StringBuilder added = new StringBuilder();
+                            int w = 0;
                             for (int i = 0; i < PRODUCERS; i++) {
-                                if (i != 0)
-                                    added.append(", ");
                                 if (!chs[i].isClosed()) {
+                                    if (i != 0)
+                                        added.append(",");
                                     //noinspection unchecked
                                     sas.add(Selector.receive(chs[i]));
-                                    added.append(Integer.toString(i));
+                                    added.append(Integer.toString(w)).append(":").append(Integer.toString(i));
+                                    w++;
                                 }
                             }
-                            l("Added channels %s", added.toString());
+                            l("added channels %s", added.toString());
 
                             if (sas.size() == 0) {
                                 l("all channels closed, exiting");
@@ -123,7 +125,11 @@ public final class Main {
                                 return;
                             }
 
-                            l("select returned: \"%s\"", m.message());
+                            final Object msg = m.message();
+                            if (msg != null)
+                                l("select returned: \"%s\"", msg);
+                            else
+                                l("select returned `null` from channel with index %d in the list", m.index());
                         }
                     } catch (final SuspendExecution | InterruptedException e) {
                         l("!!! caught %s with msg '%s', retrowing as assert failure (trace follows)", e.getClass().getName(), e.getMessage());
