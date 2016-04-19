@@ -1,0 +1,55 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+version             = '0.1.0_SNAPSHOT'
+status              = 'integration'
+description         = 'https://groups.google.com/forum/#!topic/quasar-pulsar-user/U2ztEdoPFqw'
+
+ext.classifier      = ':jdk8' // ':'
+sourceCompatibility = 1.8     // 1.7
+targetCompatibility = 1.8     // 1.7
+
+ext.quasarVer       = '0.7.4'
+ext.junitVer        = '4.12'
+
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+configurations {
+    quasar
+}
+
+configurations.all {
+    resolutionStrategy {
+        failOnVersionConflict()
+    }
+}
+
+repositories {
+//    mavenLocal()
+    mavenCentral()
+//    maven { url "https://oss.sonatype.org/content/repositories/releases" }
+//    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+//    maven { url 'https://maven.java.net/content/repositories/snapshots' }
+}
+
+dependencies {
+    compile "co.paralleluniverse:quasar-core:${quasarVer}${classifier}"
+
+    quasar "co.paralleluniverse:quasar-core:${quasarVer}${classifier}@jar"
+
+    testCompile "junit:junit:$junitVer"
+}
+
+mainClassName = "Main"
+
+applicationDefaultJvmArgs = [
+    "-Dco.paralleluniverse.fibers.verifyInstrumentation=true",
+    "-Dco.paralleluniverse.fibers.detectRunawayFibers=false",
+    "-javaagent:${configurations.quasar.singleFile}" // =v, =d, =c, =m
+]
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.12'
+}
+
+defaultTasks 'run'
