@@ -88,19 +88,21 @@ public final class Main {
                 @Suspendable
                 public void run() {
                     try {
+                        final List<SelectAction<Object>> sas = new ArrayList<>(PRODUCERS);
                         while (true) {
                             l("building select with open channels");
 
-                            final List<SelectAction<Object>> sas = new ArrayList<>(PRODUCERS);
+                            final StringBuilder added = new StringBuilder();
                             for (int i = 0; i < PRODUCERS; i++) {
+                                if (i != 0)
+                                    added.append(", ");
                                 if (!chs[i].isClosed()) {
-                                    l("channel %d open, adding", i);
                                     //noinspection unchecked
                                     sas.add(Selector.receive(chs[i]));
-                                } else {
-                                    l("channel %d NOT open, not adding", i);
+                                    added.append(Integer.toString(i));
                                 }
                             }
+                            l("Added channels %s", added.toString());
 
                             if (sas.size() == 0) {
                                 l("all channels closed, exiting");
@@ -114,6 +116,7 @@ public final class Main {
                             }
                             l("selecting with %dms timeout", CONS_SELECT_TIMEOUT_MS);
                             final SelectAction m = Selector.select(CONS_SELECT_TIMEOUT_MS, TimeUnit.MILLISECONDS, sas);
+                            sas.clear();
 
                             if (m == null) {
                                 l("select timed out, exiting");
