@@ -1,15 +1,14 @@
 apply plugin: 'java'
 apply plugin: 'application'
 
-version             = '0.1.0_SNAPSHOT'
-status              = 'integration'
+version             = '0.1.0-SNAPSHOT'
 description         = 'https://groups.google.com/forum/#!topic/quasar-pulsar-user/U2ztEdoPFqw'
 
 ext.classifier      = ':jdk8' // ':'
 sourceCompatibility = 1.8     // 1.7
 targetCompatibility = 1.8     // 1.7
 
-ext.quasarVer       = '0.7.5-SNAPSHOT'
+ext.quasarVer       = '0.7.5'
 ext.junitVer        = '4.12'
 
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
@@ -27,8 +26,8 @@ configurations.all {
 repositories {
 //    mavenLocal()
     mavenCentral()
-    maven { url "https://oss.sonatype.org/content/repositories/releases" }
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+//    maven { url "https://oss.sonatype.org/content/repositories/releases" }
+//    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 //    maven { url 'https://maven.java.net/content/repositories/snapshots' }
 }
 
@@ -36,14 +35,12 @@ dependencies {
     compile "co.paralleluniverse:quasar-core:${quasarVer}${classifier}"
 
     quasar "co.paralleluniverse:quasar-core:${quasarVer}${classifier}@jar"
-
-    testCompile "junit:junit:$junitVer"
 }
 
 mainClassName = "Main"
 
 applicationDefaultJvmArgs = [
-    "-Dco.paralleluniverse.fibers.verifyInstrumentation=true",
+    // "-Dco.paralleluniverse.fibers.verifyInstrumentation=true",
     "-Dco.paralleluniverse.fibers.detectRunawayFibers=false",
     "-javaagent:${configurations.quasar.singleFile}" // =v, =d, =c, =m
 ]

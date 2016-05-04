@@ -7,17 +7,13 @@ import java.util.concurrent.TimeUnit;
 import co.paralleluniverse.fibers.SuspendExecution;
 import co.paralleluniverse.fibers.Suspendable;
 import co.paralleluniverse.strands.Strand;
-import co.paralleluniverse.strands.channels.Channel;
-import co.paralleluniverse.strands.channels.Channels;
-import co.paralleluniverse.strands.channels.SelectAction;
-import co.paralleluniverse.strands.channels.Selector;
+import co.paralleluniverse.strands.channels.*;
 import co.paralleluniverse.strands.concurrent.ReentrantLock;
 
 public final class Main {
-    private static final int RUNS = 10;
-
-    private static final int PRODUCERS = 1000;
-
+    private static final int RUNS = 1000;
+    private static final int PRODUCERS = 128;
+    private static final int CHANNEL_BUFFER = 0;
     private static final int MESSAGES_PER_PRODUCER = 10;
 
     private static final long PROD_SLEEP_MS = 0;
@@ -47,7 +43,7 @@ public final class Main {
             final Channel[] chs = new Channel[PRODUCERS];
             final Strand[] prod = new Strand[PRODUCERS];
             for (int i = 0; i < PRODUCERS; i++) {
-                chs[i] = Channels.newChannel(0, Channels.OverflowPolicy.BLOCK, true, true);
+                chs[i] = Channels.newChannel(CHANNEL_BUFFER, Channels.OverflowPolicy.BLOCK, true, true);
                 final int iF = i;
                 prod[i] = Strand.of(new Thread(new Runnable() {
                     @Override
@@ -88,20 +84,22 @@ public final class Main {
                 @Suspendable
                 public void run() {
                     try {
-                        final List<SelectAction<Object>> sas = new ArrayList<>(PRODUCERS);
+                        final List<Port> done = new ArrayList<>(PRODUCERS);
                         while (true) {
                             l("building select with open channels");
-
                             final StringBuilder added = new StringBuilder();
-                            int w = 0;
+                            final List<SelectAction<Object>> sas = new ArrayList<>(PRODUCERS);
+
+                            boolean first = true;
                             for (int i = 0; i < PRODUCERS; i++) {
-                                if (!chs[i].isClosed()) {
-                                    if (i != 0)
+                                if (!done.contains(chs[i])) {
+                                    if (!first) {
                                         added.append(",");
+                                    }
+                                    first = false;
                                     //noinspection unchecked
                                     sas.add(Selector.receive(chs[i]));
-                                    added.append(Integer.toString(w)).append(":").append(Integer.toString(i));
-                                    w++;
+                                    added.append(Integer.toString(i));
                                 }
                             }
                             l("added channels %s", added.toString());
@@ -126,13 +124,28 @@ public final class Main {
                             }
 
                             final Object msg = m.message();
-                            if (msg != null)
+                            if (msg != null) {
                                 l("select returned: \"%s\"", msg);
-                            else
-                                l("select returned `null` from channel with index %d in the list", m.index());
+                            } else {
+                                if (m.port() != null) {
+                                    final Port p = m.port();
+                                    if (m.port() instanceof ReceivePort) {
+                                        final ReceivePort rp = (ReceivePort) p;
+                                        if (rp.isClosed()) {
+                                            l("select returned `null` from closed receive channel with index %d in the list, excluding", m.index());
+                                            done.add(rp);
+                                        } else
+                                            l("!!!ERROR: select returned `null` from OPEN receive channel with index %d in the list!!!", m.index());
+                                    } else {
+                                        l("!!!ERROR: select returned `null` from non-receive channel with index %d in the list!!!", m.index());
+                                    }
+                                } else {
+                                    l("!!!ERROR: select returned `null` from `null` channel with index %d in the list!!!", m.index());
+                                }
+                            }
                         }
                     } catch (final SuspendExecution | InterruptedException e) {
-                        l("!!! caught %s with msg '%s', retrowing as assert failure (trace follows)", e.getClass().getName(), e.getMessage());
+                        l("!!! caught %s with msg '%s', re-trowing as assert failure (trace follows)", e.getClass().getName(), e.getMessage());
                         e.printStackTrace(System.err);
                         throw new AssertionError(e);
                     }
