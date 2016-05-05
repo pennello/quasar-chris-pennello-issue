@@ -9,6 +9,7 @@ sourceCompatibility = 1.8     // 1.7
 targetCompatibility = 1.8     // 1.7
 
 ext.quasarVer       = '0.7.5'
+ext.slf4jVer        = '1.7.21'
 ext.junitVer        = '4.12'
 
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
@@ -20,6 +21,8 @@ configurations {
 configurations.all {
     resolutionStrategy {
         failOnVersionConflict()
+
+        force "org.slf4j:slf4j-api:$slf4jVer"
     }
 }
 
@@ -33,6 +36,9 @@ repositories {
 
 dependencies {
     compile "co.paralleluniverse:quasar-core:${quasarVer}${classifier}"
+    compile "org.slf4j:slf4j-api:$slf4jVer"
+    compile 'ch.qos.logback:logback-classic:1.1.7'
+
 
     quasar "co.paralleluniverse:quasar-core:${quasarVer}${classifier}@jar"
 }
