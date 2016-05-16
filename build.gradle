@@ -48,7 +48,23 @@ mainClassName = "Main"
 applicationDefaultJvmArgs = [
     // "-Dco.paralleluniverse.fibers.verifyInstrumentation=true",
     "-Dco.paralleluniverse.fibers.detectRunawayFibers=false",
-    "-javaagent:${configurations.quasar.singleFile}" // =v, =d, =c, =m
+    "-javaagent:${configurations.quasar.singleFile}", // =v, =d, =c, =m
+    "-Djava.net.preferIPv4Stack=true",
+    "-XX:+AlwaysPreTouch",
+    "-XX:MaxMetaspaceSize=64m",
+    "-XX:CompressedClassSpaceSize=32m",
+    "-XX:ReservedCodeCacheSize=64m",
+    "-XX:+HeapDumpOnOutOfMemoryError",
+    "-XX:-OmitStackTraceInFastThrow",
+    "-Duser.timezone=UTC",
+    "-Dfile.encoding=UTF-8",
+    "-XX:ParallelGCThreads=4",
+    "-XX:+UseConcMarkSweepGC",
+    "-XX:+DisableExplicitGC",
+    "-XX:-PrintGC",
+    "-XX:+PrintGCDateStamps",
+    "-XX:+PrintGCDetails",
+    "-XX:+PrintGCApplicationStoppedTime"
 ]
 
 task wrapper(type: Wrapper) {
