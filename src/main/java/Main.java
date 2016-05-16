@@ -12,10 +12,10 @@ public final class Main {
     private static final int CHANNEL_BUFFER = 0; // < 0 => unbounded
     private static final int MESSAGES_PER_PRODUCER = -1; // < 0 => unbounded
 
-    private static final int PRODUCERS = 128;
+    private static final int PRODUCERS = 16;
 
-    private static final long PROD_SLEEP_MS = 0;
-    private static final long CONS_SLEEP_MS = 0;
+    private static final long PROD_SLEEP_MS = 8;
+    private static final long CONS_SLEEP_MS = 2;
 
     private static final long CONS_SELECT_TIMEOUT_MS = 1000;
 
